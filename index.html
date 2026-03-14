@@ -12,22 +12,24 @@ body{
 font-family:Arial;
 margin:0;
 background:#f2f2f2;
-font-size:14px;
+font-size:15px;
 }
 
 header{
 background:#1e88e5;
 color:white;
-padding:12px;
-text-align:center;
-font-size:18px;
-position:relative;
+padding:10px 12px;
+font-size:16px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+}
+
+.title{
+font-weight:bold;
 }
 
 .actions{
-position:absolute;
-right:10px;
-top:8px;
 display:flex;
 gap:6px;
 }
@@ -51,7 +53,7 @@ margin:auto;
 input{
 width:100%;
 padding:10px;
-font-size:14px;
+font-size:15px;
 border-radius:8px;
 border:1px solid #ccc;
 margin-bottom:8px;
@@ -60,7 +62,7 @@ margin-bottom:8px;
 .loginBtn{
 width:100%;
 padding:10px;
-font-size:14px;
+font-size:15px;
 background:#1e88e5;
 color:white;
 border:none;
@@ -75,19 +77,18 @@ margin-bottom:6px;
 border-radius:8px;
 display:flex;
 justify-content:space-between;
+font-size:12px;
 }
 
 .precio{
 color:#1e88e5;
 font-weight:bold;
-font-size:13px;
+font-size:12px;
 }
 
 #app{
 display:none;
 }
-
-/* PAGINACION */
 
 #paginacion{
 display:flex;
@@ -96,7 +97,7 @@ align-items:center;
 gap:3px;
 margin-top:8px;
 flex-wrap:wrap;
-font-size:12px;
+font-size:13px;
 }
 
 .pageBtn{
@@ -105,7 +106,7 @@ border:none;
 background:#1e88e5;
 color:white;
 border-radius:5px;
-font-size:12px;
+font-size:13px;
 cursor:pointer;
 }
 
@@ -116,7 +117,7 @@ background:#333;
 #error{
 color:red;
 text-align:center;
-font-size:13px;
+font-size:14px;
 }
 
 </style>
@@ -125,7 +126,10 @@ font-size:13px;
 <body>
 
 <header>
+
+<div class="title">
 Raulins Buscador
+</div>
 
 <div class="actions">
 <button id="refreshBtn" class="headerBtn" onclick="actualizar()" style="display:none;">Actualizar</button>
@@ -218,7 +222,6 @@ cargarProductos();
 
 function cargarProductos(){
 
-// Evita cache agregando timestamp
 const url = baseUrl + "&t=" + new Date().getTime();
 
 fetch(url)
@@ -353,7 +356,6 @@ let palabras=this.value.toLowerCase().split(" ").filter(w=>w);
 resultados=productos.filter(p=>{
 
 let nombre=p.nombre.toLowerCase();
-
 return palabras.every(w=>nombre.includes(w));
 
 });
