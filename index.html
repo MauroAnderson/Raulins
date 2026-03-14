@@ -2,100 +2,366 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Buscador de Productos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Raulins Buscador</title>
 
 <style>
 
 body{
 font-family:Arial;
-background:#f5f5f5;
-padding:20px;
+margin:0;
+background:#f2f2f2;
+font-size:14px;
 }
 
-h1{
-text-align:center;
-}
-
-#buscar{
-width:100%;
+header{
+background:#1e88e5;
+color:white;
 padding:12px;
+text-align:center;
 font-size:18px;
-margin-bottom:20px;
+position:relative;
+}
+
+.actions{
+position:absolute;
+right:10px;
+top:8px;
+display:flex;
+gap:6px;
+}
+
+.headerBtn{
+background:white;
+color:#1e88e5;
+border:none;
+padding:4px 8px;
+border-radius:6px;
+font-size:12px;
+cursor:pointer;
+}
+
+.container{
+padding:12px;
+max-width:600px;
+margin:auto;
+}
+
+input{
+width:100%;
+padding:10px;
+font-size:14px;
+border-radius:8px;
+border:1px solid #ccc;
+margin-bottom:8px;
+}
+
+.loginBtn{
+width:100%;
+padding:10px;
+font-size:14px;
+background:#1e88e5;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
 }
 
 .producto{
 background:white;
 padding:10px;
-margin-bottom:8px;
-border-radius:6px;
+margin-bottom:6px;
+border-radius:8px;
 display:flex;
 justify-content:space-between;
 }
 
-</style>
+.precio{
+color:#1e88e5;
+font-weight:bold;
+font-size:13px;
+}
 
+#app{
+display:none;
+}
+
+/* PAGINACION */
+
+#paginacion{
+display:flex;
+justify-content:flex-end;
+align-items:center;
+gap:3px;
+margin-top:8px;
+flex-wrap:wrap;
+font-size:12px;
+}
+
+.pageBtn{
+padding:4px 8px;
+border:none;
+background:#1e88e5;
+color:white;
+border-radius:5px;
+font-size:12px;
+cursor:pointer;
+}
+
+.pageActive{
+background:#333;
+}
+
+#error{
+color:red;
+text-align:center;
+font-size:13px;
+}
+
+</style>
 </head>
+
 <body>
 
-<h1>Buscador de Precios</h1>
+<header>
+Raulins Buscador
 
-<input type="text" id="buscar" placeholder="Buscar producto...">
+<div class="actions">
+<button id="refreshBtn" class="headerBtn" onclick="actualizar()" style="display:none;">Actualizar</button>
+<button id="logoutBtn" class="headerBtn" onclick="logout()" style="display:none;">Salir</button>
+</div>
+
+</header>
+
+<div class="container">
+
+<div id="login">
+
+<input id="usuario" placeholder="Usuario">
+
+<input id="password" type="password" placeholder="Contraseña">
+
+<button class="loginBtn" onclick="login()">Ingresar</button>
+
+<p id="error"></p>
+
+</div>
+
+<div id="app">
+
+<input id="buscar" placeholder="Buscar producto...">
 
 <div id="resultados"></div>
 
+<div id="paginacion"></div>
+
+</div>
+
+</div>
+
 <script>
 
-// EJEMPLO DE PRODUCTOS
-const productos = [
-{nombre:"LAPICERO FC 250ML",precio:"3.50"},
-{nombre:"LAPICERO PILOT AZUL",precio:"4.00"},
-{nombre:"CUADERNO A4 STANFORD",precio:"8.00"},
-{nombre:"BORRADOR FABER",precio:"1.50"}
-];
+const usuario="raulins";
+const password="raulins2020";
 
-const input = document.getElementById("buscar");
-const resultados = document.getElementById("resultados");
+let productos=[];
+let resultados=[];
+let pagina=1;
+const porPagina=30;
 
-function mostrar(lista){
+const baseUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vTxTOmK34UM-a8QKrnBzkCSnr1cBQUsWep-WRaLbmx7UPXI--O-QIvJq_yv-JLewv8wrb-VHfGwtvJ7/pub?gid=0&single=true&output=csv";
 
-resultados.innerHTML="";
+function login(){
 
-lista.forEach(p=>{
+let u=document.getElementById("usuario").value;
+let p=document.getElementById("password").value;
 
-let div=document.createElement("div");
+if(u===usuario && p===password){
 
-div.className="producto";
+localStorage.setItem("login","ok");
 
-div.innerHTML=`
-<span>${p.nombre}</span>
-<strong>S/ ${p.precio}</strong>
-`;
+document.getElementById("login").style.display="none";
+document.getElementById("app").style.display="block";
 
-resultados.appendChild(div);
+document.getElementById("logoutBtn").style.display="block";
+document.getElementById("refreshBtn").style.display="block";
+
+cargarProductos();
+
+}else{
+
+document.getElementById("error").innerText="Usuario o contraseña incorrectos";
+
+}
+
+}
+
+function logout(){
+
+localStorage.removeItem("login");
+location.reload();
+
+}
+
+if(localStorage.getItem("login")=="ok"){
+
+document.getElementById("login").style.display="none";
+document.getElementById("app").style.display="block";
+
+document.getElementById("logoutBtn").style.display="block";
+document.getElementById("refreshBtn").style.display="block";
+
+cargarProductos();
+
+}
+
+function cargarProductos(){
+
+// Evita cache agregando timestamp
+const url = baseUrl + "&t=" + new Date().getTime();
+
+fetch(url)
+.then(r=>r.text())
+.then(data=>{
+
+productos=[];
+
+let filas=data.split("\n").slice(1);
+
+filas.forEach(f=>{
+
+let c=f.split(",");
+
+if(c.length>=3){
+
+productos.push({
+id:c[0],
+nombre:c[1].replace(/"/g,'').trim(),
+precio:c[2].replace(/"/g,'').trim()
+});
+
+}
+
+});
+
+resultados=productos;
+pagina=1;
+
+mostrar();
 
 });
 
 }
 
-function buscar(){
+function actualizar(){
 
-let texto=input.value.toLowerCase().split(" ");
+document.getElementById("buscar").value="";
+resultados=productos=[];
+pagina=1;
 
-let filtrado=productos.filter(p=>{
+cargarProductos();
+
+}
+
+function mostrar(){
+
+let inicio=(pagina-1)*porPagina;
+let fin=inicio+porPagina;
+
+let datos=resultados.slice(inicio,fin);
+
+let html="";
+
+datos.forEach(p=>{
+
+html+=`
+<div class="producto">
+<div>${p.nombre}</div>
+<div class="precio">S/ ${p.precio}</div>
+</div>
+`;
+
+});
+
+document.getElementById("resultados").innerHTML=html;
+
+paginacion();
+
+}
+
+function paginacion(){
+
+let total=Math.ceil(resultados.length/porPagina);
+
+let html="";
+
+if(pagina>1){
+html+=`<button class="pageBtn" onclick="irPagina(${pagina-1})">◀</button>`;
+}
+
+let inicio=Math.max(1,pagina-2);
+let fin=Math.min(total,pagina+2);
+
+if(inicio>1){
+
+html+=`<button class="pageBtn" onclick="irPagina(1)">1</button>`;
+
+if(inicio>2){
+html+=`<span>...</span>`;
+}
+
+}
+
+for(let i=inicio;i<=fin;i++){
+
+if(i===pagina){
+html+=`<button class="pageBtn pageActive">${i}</button>`;
+}else{
+html+=`<button class="pageBtn" onclick="irPagina(${i})">${i}</button>`;
+}
+
+}
+
+if(fin<total){
+
+if(fin<total-1){
+html+=`<span>...</span>`;
+}
+
+html+=`<button class="pageBtn" onclick="irPagina(${total})">${total}</button>`;
+
+}
+
+if(pagina<total){
+html+=`<button class="pageBtn" onclick="irPagina(${pagina+1})">▶</button>`;
+}
+
+document.getElementById("paginacion").innerHTML=html;
+
+}
+
+function irPagina(p){
+pagina=p;
+mostrar();
+}
+
+document.getElementById("buscar").addEventListener("input",function(){
+
+let palabras=this.value.toLowerCase().split(" ").filter(w=>w);
+
+resultados=productos.filter(p=>{
 
 let nombre=p.nombre.toLowerCase();
 
-return texto.every(palabra=>nombre.includes(palabra));
+return palabras.every(w=>nombre.includes(w));
 
 });
 
-mostrar(filtrado);
+pagina=1;
+mostrar();
 
-}
-
-input.addEventListener("input",buscar);
-
-mostrar(productos);
+});
 
 </script>
 
