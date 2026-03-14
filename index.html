@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Buscador de Productos</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f5f5f5;
+padding:20px;
+}
+
+h1{
+text-align:center;
+}
+
+#buscar{
+width:100%;
+padding:12px;
+font-size:18px;
+margin-bottom:20px;
+}
+
+.producto{
+background:white;
+padding:10px;
+margin-bottom:8px;
+border-radius:6px;
+display:flex;
+justify-content:space-between;
+}
+
+</style>
+
+</head>
+<body>
+
+<h1>Buscador de Precios</h1>
+
+<input type="text" id="buscar" placeholder="Buscar producto...">
+
+<div id="resultados"></div>
+
+<script>
+
+// EJEMPLO DE PRODUCTOS
+const productos = [
+{nombre:"LAPICERO FC 250ML",precio:"3.50"},
+{nombre:"LAPICERO PILOT AZUL",precio:"4.00"},
+{nombre:"CUADERNO A4 STANFORD",precio:"8.00"},
+{nombre:"BORRADOR FABER",precio:"1.50"}
+];
+
+const input = document.getElementById("buscar");
+const resultados = document.getElementById("resultados");
+
+function mostrar(lista){
+
+resultados.innerHTML="";
+
+lista.forEach(p=>{
+
+let div=document.createElement("div");
+
+div.className="producto";
+
+div.innerHTML=`
+<span>${p.nombre}</span>
+<strong>S/ ${p.precio}</strong>
+`;
+
+resultados.appendChild(div);
+
+});
+
+}
+
+function buscar(){
+
+let texto=input.value.toLowerCase().split(" ");
+
+let filtrado=productos.filter(p=>{
+
+let nombre=p.nombre.toLowerCase();
+
+return texto.every(palabra=>nombre.includes(palabra));
+
+});
+
+mostrar(filtrado);
+
+}
+
+input.addEventListener("input",buscar);
+
+mostrar(productos);
+
+</script>
+
+</body>
+</html>
