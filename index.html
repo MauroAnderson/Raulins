@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -125,6 +126,7 @@ font-size:14px;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -179,6 +181,10 @@ let pagina=1;
 const porPagina=30;
 
 const baseUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vTxTOmK34UM-a8QKrnBzkCSnr1cBQUsWep-WRaLbmx7UPXI--O-QIvJq_yv-JLewv8wrb-VHfGwtvJ7/pub?gid=0&single=true&output=csv";
+
+function quitarTildes(texto){
+return texto.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+}
 
 function login(){
 
@@ -355,11 +361,11 @@ mostrar();
 
 document.getElementById("buscar").addEventListener("input",function(){
 
-let palabras=this.value.toLowerCase().split(" ").filter(w=>w);
+let palabras=quitarTildes(this.value.toLowerCase()).split(" ").filter(w=>w);
 
 resultados=productos.filter(p=>{
 
-let nombre=p.nombre.toLowerCase();
+let nombre=quitarTildes(p.nombre.toLowerCase());
 return palabras.every(w=>nombre.includes(w));
 
 });
